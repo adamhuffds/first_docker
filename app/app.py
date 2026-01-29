@@ -11,11 +11,19 @@ engine = create_engine(DB_URL, pool_pre_ping=True)
 def health():
     return{"status": "ok"}
 
+@app.get("/print")
+def test_print():
+    return{"output": "output"}
+
+
 @app.get("/notes")
 def get_notes():
-    with engine.begin as conn:
-        rows = conn.execute(text("SELECT id, body, created_at FROM notes ORDER_BY id DESC")).mappings().all()
-    return jsonify(list(rows))
+    with engine.begin() as conn:
+        rows = conn.execute(
+            text("SELECT id, body, created_at FROM notes ORDER BY id DESC")
+        ).mappings().all()
+
+    return jsonify([dict(r) for r in rows])
 
 @app.post("/notes")
 def add_note():
